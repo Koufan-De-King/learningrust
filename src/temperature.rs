@@ -1,5 +1,5 @@
 // formula: °C = (°F - 32) × 5/9
-pub fn conv(celsius: i32) -> i32 {
-    let fahrenheit= (celsius*9/5) + 32;
+pub fn conv(celsius: f32) -> f32 {
+    let fahrenheit: f32 = ((celsius*9.0/5.0) + 32.0) as f32;
     fahrenheit
 }

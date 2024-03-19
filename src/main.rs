@@ -37,8 +37,8 @@ ______________________________________");
                 io::stdin()
                     .read_line(&mut temperature)
                     .expect("Failed to read temperature");
-                let temperature: i32 = temperature.trim().parse().expect("Please type a tempearature\n");
-                let result:i32 = conv(temperature);
+                let temperature: f32 = temperature.trim().parse().expect("Please type a tempearature\n");
+                let result: f32 = conv(temperature);
                 println!("{temperature} °C equals {result} °F");
         },
         3 => {
