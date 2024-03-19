@@ -8,13 +8,13 @@ use fib::fibo;
 use temperature::conv;
 
 fn main() {
-    println!("\nHello user, Welcome!!
-    How would you like to use my program ?
-    ______________________________________
-    1)- Compute a fibonacci
-    2)- Convert a temperature from celsius to fahrenheit
-    3)- Get the lyrics of the song `Twelve days of christmas`
-    ______________________________________");
+println!("\nHello user, Welcome!!
+How would you like to use my program ?
+______________________________________
+1)- Compute a fibonacci
+2)- Convert a temperature from celsius to fahrenheit
+3)- Get the lyrics of the song `Twelve days of christmas`
+______________________________________");
     let mut choice = String::new();
     io::stdin()
        .read_line(&mut choice)
@@ -42,7 +42,7 @@ fn main() {
                 println!("{temperature} °C equals {result} °F");
         },
         3 => {
-                println!("It goes: \n");
+                println!("\nIt goes: ");
                 for i in 1..=12{
                     lyrics(i)
                 } 
