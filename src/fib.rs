@@ -1,4 +1,4 @@
-pub fn fibo(number: u32) -> u32 {
+pub fn fibo(number: u64) -> u64 {
     if number < 2 {
        return number
     }
