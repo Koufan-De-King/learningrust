@@ -27,8 +27,8 @@ ______________________________________");
                 io::stdin()
                     .read_line(&mut number)
                     .expect("Failed to read input");
-                let number: u32 = number.trim().parse().expect("Please type a number\n");
-                let answer: u32 = fibo(number);
+                let number: u64 = number.trim().parse().expect("Please type a number\n");
+                let answer: u64 = fibo(number);
                 println!("The fibonacci of {number} is {answer}");
             },
         2 => {
@@ -50,5 +50,4 @@ ______________________________________");
         }
         _ => println!("Invalid choice"),
     }
-    
 }
