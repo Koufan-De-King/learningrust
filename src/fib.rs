@@ -5,5 +5,3 @@ pub fn fibo(number: u64) -> u64 {
        fibo(number - 1) + fibo(number - 2) 
     }
 }
-
-///test
