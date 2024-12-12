@@ -1,134 +1,34 @@
 name: Terraform Deployment
 
 on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: "Environment name"
-        required: true
-        type: choice
-        options:
-          - dev
-  push: null
-  pull_request: null
-
-defaults:
-  run:
-    working-directory: ./terraform
-
+    workflow_dispatch:
+      inputs:
+        logLevel:
+          description: 'Log level'
+          required: true
+          default: 'warning'
+          type: choice
+          options:
+            - info
+            - warning
+            - debug
+        print_tags:
+          description: 'True to print to STDOUT'
+          required: true
+          type: boolean
+        tags:
+          description: 'Test scenario tags'
+          required: true
+          type: string
+        environment:
+          description: 'Environment to run tests against'
+          type: environment
+          required: true
+  
 jobs:
-  tflint:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    steps:
-    - uses: actions/checkout@v4
-      name: Checkout source code
-
-    - uses: actions/cache@v4
-      name: Cache plugin dir
-      with:
-        path: ~/.tflint.d/plugins
-        key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
-
-    - uses: terraform-linters/setup-tflint@v4.1.0
-      name: Setup TFLint
-      with:
-        tflint_version: v0.52.0
-    - name: Show version
-      run: tflint --version
-
-    - name: Init TFLint
-      run: tflint --init
-      env:
-        # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
-        GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Run TFLint
-      run: tflint -f compact
-
-
-  tfsec:
-    name: tfsec
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Clone repo
-        uses: actions/checkout@v4
-
-      - name: Cache tfsec binary
-        uses: actions/cache@v4
-        with:
-          path: ~/.tfsec
-          key: tfsec-${{ runner.os }}-${{ hashFiles('**/*.tf') }}
-          restore-keys: |
-            tfsec-${{ runner.os }}-
-
-      - name: Install tfsec (if not cached)
-        run: |
-          if [ ! -f ~/.tfsec/tfsec ]; then
-            mkdir -p ~/.tfsec
-            curl -L "https://github.com/aquasecurity/tfsec/releases/download/v1.28.0/tfsec-linux-amd64" -o ~/.tfsec/tfsec
-            chmod +x ~/.tfsec/tfsec
-          fi
-        shell: bash
-
-      - name: Run tfsec
-        run: ~/.tfsec/tfsec . || true
-
-  deploy:
-    if: ${{ inputs.name }} == matrix.name
-    needs: [tflint, tfsec]
-    runs-on: ubuntu-latest
-    name: Deploy to ${{ matrix.name }} Environment
-    environment:
-      name: ${{ matrix.name }}
-      url: https://${{ vars.DOMAIN_NAME }}
-    strategy:
-      matrix:
-        name:
-          - dev
-        include:
-          - name: dev
-            description: "Deploy to Dev Environment"
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.9.8
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Set DB Password and Username as Environment Variables
-        run: |
-          echo "TF_VAR_name=${{ matrix.name }}-cluster" >> $GITHUB_ENV
-          echo "TF_VAR_db_username=${{ vars.DB_USERNAME }}" >> $GITHUB_ENV
-          echo "TF_VAR_db_password=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "TF_VAR_oidc_kc_client_id=${{ vars.OIDC_KC_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "TF_VAR_oidc_kc_client_secret=${{ secrets.OIDC_KC_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "TF_VAR_oidc_kc_issuer_url=${{ vars.OIDC_KC_ISSUER_URL }}" >> $GITHUB_ENV
-          echo "TF_VAR_cert_arn=${{ vars.CERT_ARN }}" >> $GITHUB_ENV
-          echo "TF_VAR_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-          echo "TF_VAR_zone_name=${{ vars.DOMAIN_NAME }}" >> $GITHUB_ENV
-
-      - name: Terraform Init
-        run: terraform init -var-file=${{ matrix.name }}.tfvars -backend-config="bucket=adorsys-webank-dev-tfstate" -backend-config="dynamodb_table=webank-tflock"
-
-      - name: Terraform Plan
-        run: terraform plan -var-file=${{ matrix.name }}.tfvars -out=plan.tfplan
-
-      - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch'
-        run: terraform apply -auto-approve plan.tfplan
+    print-tag:
+        runs-on: ubuntu-latest
+        if:  ${{ inputs.print_tags }} 
+        steps:
+        - name: Print the input tag to STDOUT
+          run: echo  The tags are ${{ inputs.tags }} 
